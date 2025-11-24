@@ -33,7 +33,7 @@ public class Main {
                 case 3 -> viewAccounts();
                 case 4 -> viewTransactions();
                 case 5 -> viewFinancialMetrics();
-                //case 6 -> importCSVTransactions();
+                case 6 -> importCSVTransactions();
                 case 7 -> getFinancialRecommendation();
                 case 8 -> viewTotalNetWorth();
                 case 9 -> changePassword();
@@ -219,12 +219,55 @@ public class Main {
             Account.AccountType type = Account.AccountType.valueOf(typeStr);
             Currency currency = Currency.getInstance(currencyCode);
             
-            Account account = new Account(name, type, balance, currency);
+            User currentUser = authService.getCurrentUser();
+            Account account = new Account(currentUser.getId(), name, type, balance, currency);
             financeService.addAccount(account);
             
             System.out.println("✓ Account added successfully: " + account);
         } catch (Exception e) {
             System.out.println("Error adding account: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+    }
+    
+    private static void importCSVTransactions() {
+        System.out.println("\n--- IMPORT CSV TRANSACTIONS ---");
+        
+        viewAccounts();
+        int accountId = getIntInput("Enter account ID for import: ");
+        
+        System.out.print("Enter CSV file path (e.g., bankstatement.csv): ");
+        String filePath = scanner.nextLine();
+        
+        // Preview the CSV first
+        try {
+            CSVImportService importService = new CSVImportService(new TransactionRepository());
+            System.out.println("\nPreviewing CSV file...");
+            importService.previewCSV(filePath, 10);
+            
+            System.out.print("\nDo you want to import these transactions? (y/n): ");
+            String confirm = scanner.nextLine();
+            
+            if (confirm.equalsIgnoreCase("y")) {
+                User currentUser = authService.getCurrentUser();
+                List<Transaction> imported = importService.importTransactionsFromCSV(
+                    filePath, accountId, currentUser.getId(), financeService);
+                
+                System.out.println("✓ Successfully processed " + imported.size() + " transactions");
+                
+                Account updatedAccount = financeService.getAccountById(accountId);
+                if (updatedAccount != null) {
+                    System.out.println("✓ Account '" + updatedAccount.getName() + "' updated balance: " + 
+                                     updatedAccount.getBalance() + " " + updatedAccount.getCurrency().getCurrencyCode());
+                }
+            } else {
+                System.out.println("Import cancelled.");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error importing CSV: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -243,32 +286,78 @@ public class Main {
         System.out.print("Enter transaction type: ");
         String typeStr = scanner.nextLine().toUpperCase();
         
-        System.out.print("Enter category: ");
-        String category = scanner.nextLine();
-        
         try {
             Transaction.TransactionType type = Transaction.TransactionType.valueOf(typeStr);
-            Transaction transaction = new Transaction(accountId, description, amount, type, category, LocalDate.now());
-            financeService.addTransaction(transaction);
             
+            // GET CATEGORY BASED ON TRANSACTION TYPE
+            String category = getCategoryFromUser(type);
+            if (category == null) {
+                System.out.println("Transaction cancelled.");
+                return;
+            }
+            
+            Transaction transaction = new Transaction(authService.getCurrentUser().getId(), accountId, description, amount, type, category, LocalDate.now());
+            
+            financeService.addTransaction(transaction);
             System.out.println("✓ Transaction added successfully: " + transaction);
         } catch (Exception e) {
             System.out.println("Error adding transaction: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+
+    private static String getCategoryFromUser(Transaction.TransactionType type) {
+        System.out.println("\nPlease select a category:");
+        
+        Transaction.Category[] categories;
+        if (type == Transaction.TransactionType.INCOME) {
+            categories = Transaction.Category.getIncomeCategories();
+            System.out.println("--- INCOME CATEGORIES ---");
+        } else {
+            categories = Transaction.Category.getExpenseCategories();
+            System.out.println("--- EXPENSE CATEGORIES ---");
+        }
+        
+        for (int i = 0; i < categories.length; i++) {
+            System.out.println((i + 1) + ". " + categories[i].getDisplayName());
+        }
+        
+        int choice = 0;
+        while (choice < 1 || choice > categories.length) {
+            System.out.print("Enter category (1-" + categories.length + "): ");
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+                if (choice < 1 || choice > categories.length) {
+                    System.out.println("Please enter a number between 1 and " + categories.length + ".");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+        
+        return categories[choice - 1].getDisplayName();
     }
     
     private static void viewAccounts() {
         System.out.println("\n--- ALL ACCOUNTS ---");
-        List<Account> accounts = financeService.getAllAccounts();
         
-        if (accounts.isEmpty()) {
-            System.out.println("No accounts found.");
-        } else {
-            for (Account account : accounts) {
-                System.out.println(account);
+        try {
+            User currentUser = authService.getCurrentUser();
+            List<Account> accounts = financeService.getAccountsByUserId(currentUser.getId());
+            
+            if (accounts.isEmpty()) {
+                System.out.println("No accounts found.");
+            } else {
+                for (Account account : accounts) {
+                    System.out.println(account);
+                }
             }
+        } catch (Exception e) {
+            System.out.println("Error retrieving accounts: " + e.getMessage());
         }
+        
     }
+
     
     private static void viewTransactions() {
         System.out.println("\n--- ACCOUNT TRANSACTIONS ---");

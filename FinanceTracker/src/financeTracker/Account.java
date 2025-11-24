@@ -5,6 +5,7 @@ import java.util.Currency;
 
 public class Account {
     private int id;
+    private int userId;
     private String name;
     private AccountType type;
     private BigDecimal balance;
@@ -16,8 +17,9 @@ public class Account {
     
     public Account() {}
     
-    public Account(String name, AccountType type, BigDecimal balance, Currency currency) {
-        this.name = name;
+    public Account(int userId, String name, AccountType type, BigDecimal balance, Currency currency) {
+    	this.userId = userId;
+    	this.name = name;
         this.type = type;
         this.balance = balance;
         this.currency = currency;
@@ -26,6 +28,9 @@ public class Account {
     
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
+    
+    public int getUserId() { return userId; }
+    public void setUserId(int userId) { this.userId = userId; }
     
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -41,7 +46,7 @@ public class Account {
     
     @Override
     public String toString() {
-        return String.format("Account{id=%d, name='%s', type=%s, balance=%.2f %s}", 
-            id, name, type, balance, currency.getCurrencyCode());
+        return String.format("Account{user=%d, id=%d, name='%s', type=%s, balance=%.2f %s}", 
+            userId, id, name, type, balance, currency.getCurrencyCode());
     }
 }

@@ -12,7 +12,7 @@ public class TransactionRepository {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
     
-    public void addTransaction(Transaction transaction) {
+    /*public void addTransaction(Transaction transaction) {
         String sql = "INSERT INTO transactions (account_id, description, amount, type, category, date, notes) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -33,6 +33,39 @@ public class TransactionRepository {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to add transaction", e);
+        }
+    }*/
+    
+    public void addTransaction(Transaction transaction) {
+        String sql = "INSERT INTO transactions (user_id, account_id, description, amount, type, category, date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, transaction.getUserId());
+            pstmt.setInt(2, transaction.getAccountId());
+            pstmt.setString(3, transaction.getDescription());
+            pstmt.setBigDecimal(4, transaction.getAmount());
+            pstmt.setString(5, transaction.getType().name());
+            pstmt.setString(6, transaction.getCategory());
+            pstmt.setString(7, transaction.getDate().toString());
+            pstmt.setString(8, transaction.getNotes());
+            
+            System.out.println("DEBUG: Executing SQL for transaction: " + transaction.getDescription());
+            System.out.println("DEBUG: user_id=" + transaction.getUserId() + ", account_id=" + transaction.getAccountId());
+            
+            int rowsAffected = pstmt.executeUpdate();
+            System.out.println("DEBUG: Rows affected: " + rowsAffected);
+            
+            try (var generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    transaction.setId(generatedKeys.getInt(1));
+                    System.out.println("DEBUG: Generated transaction ID: " + transaction.getId());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL ERROR in addTransaction: " + e.getMessage());
+            System.err.println("SQL State: " + e.getSQLState());
+            System.err.println("Error Code: " + e.getErrorCode());
+            throw new RuntimeException("Failed to add transaction: " + e.getMessage(), e);
         }
     }
     

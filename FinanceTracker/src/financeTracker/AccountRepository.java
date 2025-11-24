@@ -14,13 +14,14 @@ public class AccountRepository {
     }
     
     public void addAccount(Account account) {
-        String sql = "INSERT INTO accounts (name, type, balance, currency) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO accounts (user_id, name, type, balance, currency) VALUES (?, ?, ?, ?, ?)";
         
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, account.getName());
-            pstmt.setString(2, account.getType().name());
-            pstmt.setBigDecimal(3, account.getBalance());
-            pstmt.setString(4, account.getCurrency().getCurrencyCode());
+        	pstmt.setInt(1, account.getUserId());
+            pstmt.setString(2, account.getName());
+            pstmt.setString(3, account.getType().name());
+            pstmt.setBigDecimal(4, account.getBalance());
+            pstmt.setString(5, account.getCurrency().getCurrencyCode());
             
             pstmt.executeUpdate();
             
@@ -34,6 +35,32 @@ public class AccountRepository {
         }
     }
     
+    public List<Account> getAccountsByUserId(int userId) {
+        List<Account> accounts = new ArrayList<>();
+        String sql = "SELECT * FROM accounts WHERE user_id = ?";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Account account = new Account();
+                    account.setId(rs.getInt("id"));
+                    account.setUserId(rs.getInt("user_id"));
+                    account.setName(rs.getString("name"));
+                    account.setType(Account.AccountType.valueOf(rs.getString("type")));
+                    account.setBalance(rs.getBigDecimal("balance"));
+                    account.setCurrency(Currency.getInstance(rs.getString("currency")));
+                    accounts.add(account);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to retrieve accounts for user", e);
+        }
+        
+        return accounts;
+    }
+    
     public List<Account> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
         String sql = "SELECT * FROM accounts";
@@ -44,6 +71,7 @@ public class AccountRepository {
             while (rs.next()) {
                 Account account = new Account();
                 account.setId(rs.getInt("id"));
+                account.setUserId(rs.getInt("user_id"));
                 account.setName(rs.getString("name"));
                 account.setType(Account.AccountType.valueOf(rs.getString("type")));
                 account.setBalance(rs.getBigDecimal("balance"));

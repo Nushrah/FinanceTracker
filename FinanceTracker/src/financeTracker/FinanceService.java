@@ -1,6 +1,7 @@
 package financeTracker;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -96,6 +97,23 @@ public class FinanceService {
     public String getFinancialRecommendation(int year, int month) {
         FinancialMetrics metrics = calculateMonthlyMetrics(year, month);
         return recommendationService.getRandomRecommendation(metrics);
+    }
+    
+    public List<Account> getAccountsByUserId(int userId) {
+        List<Account> allAccounts = accountRepository.getAllAccounts();
+        List<Account> userAccounts = new ArrayList<>();
+        
+        for (Account account : allAccounts) {
+            if (account.getUserId() == userId) {
+                userAccounts.add(account);
+            }
+        }
+        
+        return userAccounts;
+    }
+    
+    public Account getAccountById(int accountId) {
+        return accountRepository.getAccountById(accountId);
     }
     
     // Delegate methods to repositories

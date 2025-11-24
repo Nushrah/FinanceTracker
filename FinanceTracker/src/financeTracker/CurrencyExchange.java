@@ -15,12 +15,11 @@ public class CurrencyExchange {
     }
     
     private void initializeExchangeRates() {
-        // Using HKD as the base currency (HKD = 1)
         exchangeRates.put("HKD", BigDecimal.ONE);
-        exchangeRates.put("USD", BigDecimal.valueOf(0.128));  // 1 HKD = 0.128 USD
-        exchangeRates.put("EUR", BigDecimal.valueOf(0.118));  // 1 HKD = 0.118 EUR
-        exchangeRates.put("CNY", BigDecimal.valueOf(0.925));  // 1 HKD = 0.925 CNY
-        exchangeRates.put("SGD", BigDecimal.valueOf(0.172));  // 1 HKD = 0.172 SGD
+        exchangeRates.put("USD", BigDecimal.valueOf(7.77));   // 1 USD = 7.77 HKD
+        exchangeRates.put("EUR", BigDecimal.valueOf(9.01));   // 1 EUR = 9.01 HKD
+        exchangeRates.put("CNY", BigDecimal.valueOf(1.09));   // 1 CNY = 1.09 HKD
+        exchangeRates.put("SGD", BigDecimal.valueOf(5.97));   // 1 SGD = 5.97 HKD
     }
     
     public BigDecimal convertCurrency(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
@@ -39,7 +38,6 @@ public class CurrencyExchange {
                 (fromRate == null ? fromCode : toCode));
         }
         
-        // Convert to HKD first, then to target currency
         BigDecimal amountInHKD = amount.multiply(fromRate);
         return amountInHKD.divide(toRate, 2, RoundingMode.HALF_UP);
     }
@@ -53,6 +51,21 @@ public class CurrencyExchange {
     
     public Map<String, BigDecimal> getAvailableCurrencies() {
         return new HashMap<>(exchangeRates);
+    }
+    
+    public BigDecimal getExchangeRate(Currency fromCurrency, Currency toCurrency) {
+        if (fromCurrency.equals(toCurrency)) {
+            return BigDecimal.ONE;
+        }
+        
+        BigDecimal fromRate = exchangeRates.get(fromCurrency.getCurrencyCode());
+        BigDecimal toRate = exchangeRates.get(toCurrency.getCurrencyCode());
+        
+        if (fromRate == null || toRate == null) {
+            throw new IllegalArgumentException("Unsupported currency");
+        }
+        
+        return toRate.divide(fromRate, 6, RoundingMode.HALF_UP);
     }
     
 }
