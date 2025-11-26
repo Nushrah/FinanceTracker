@@ -386,6 +386,15 @@ public class Main {
             FinancialMetrics metrics = financeService.calculateMonthlyMetrics(year, month);
             System.out.println("\nFinancial Metrics for " + month + "/" + year + ":");
             System.out.println(metrics);
+            
+            // Percentage breakdown of category wise spending 
+            try {
+                ExpenseCategoryBreakdown breakdown = financeService.calculateExpenseCategoryPercentages(year, month);
+                System.out.println();
+                System.out.println(breakdown.toString());
+            } catch (Exception ex) {
+                System.out.println("Error calculating expense breakdown: " + ex.getMessage());
+            }
         } catch (Exception e) {
             System.out.println("Error calculating metrics: " + e.getMessage());
         }

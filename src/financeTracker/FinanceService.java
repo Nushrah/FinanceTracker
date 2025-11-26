@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Currency;
+import java.util.Map;
+import java.util.HashMap;
 
 public class FinanceService {
     private final AccountRepository accountRepository;
@@ -79,6 +81,43 @@ public class FinanceService {
         }
         
         return metrics;
+    }
+    
+    public ExpenseCategoryBreakdown calculateExpenseCategoryPercentages(int year, int month) {
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        List<Transaction> monthlyTransactions = transactionRepository.getTransactionsByDateRange(startDate, endDate);
+
+        BigDecimal totalExpenses = BigDecimal.ZERO;
+        Map<String, BigDecimal> categorySums = new HashMap<>();
+
+        for (Transaction transaction : monthlyTransactions) {
+            if (transaction.getType() == Transaction.TransactionType.EXPENSE) {
+                String category = transaction.getCategory() == null ? "Uncategorized" : transaction.getCategory();
+                BigDecimal prev = categorySums.getOrDefault(category, BigDecimal.ZERO);
+                    
+                prev = prev.add(transaction.getAmount());
+                categorySums.put(category, prev);
+                totalExpenses = totalExpenses.add(transaction.getAmount());
+            }
+        }
+
+        Map<String, BigDecimal> percentages = new HashMap<>();
+        if (totalExpenses.compareTo(BigDecimal.ZERO) <= 0) {
+            return new ExpenseCategoryBreakdown(BigDecimal.ZERO, percentages);
+        }
+
+        // compute percentage per category
+        for (Map.Entry<String, BigDecimal> e : categorySums.entrySet()) {
+            BigDecimal pct = e.getValue()
+            .divide(totalExpenses, 4, RoundingMode.HALF_UP)
+            .multiply(BigDecimal.valueOf(100));
+            percentages.put(e.getKey(), pct);
+        }
+
+        return new ExpenseCategoryBreakdown(totalExpenses, percentages);
     }
     
     public BigDecimal getTotalNetWorth(Currency targetCurrency) {
