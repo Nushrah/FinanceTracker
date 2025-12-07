@@ -15,7 +15,7 @@ public class DisplayUtils {
     
     public static void printHeader(String title) {
         System.out.println("\n" + CYAN + "╔═══════════════════════════════════════════════════╗");
-        System.out.println("║" + centerText(title, 49) + "║");
+        System.out.println("║" + centerText(title, 51) + "║");
         System.out.println("╚═══════════════════════════════════════════════════╝" + RESET);
     }
     

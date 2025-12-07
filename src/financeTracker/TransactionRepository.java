@@ -49,16 +49,9 @@ public class TransactionRepository {
             pstmt.setString(7, transaction.getDate().toString());
             pstmt.setString(8, transaction.getNotes());
             
-            System.out.println("DEBUG: Executing SQL for transaction: " + transaction.getDescription());
-            System.out.println("DEBUG: user_id=" + transaction.getUserId() + ", account_id=" + transaction.getAccountId());
-            
-            int rowsAffected = pstmt.executeUpdate();
-            System.out.println("DEBUG: Rows affected: " + rowsAffected);
-            
             try (var generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     transaction.setId(generatedKeys.getInt(1));
-                    System.out.println("DEBUG: Generated transaction ID: " + transaction.getId());
                 }
             }
         } catch (SQLException e) {

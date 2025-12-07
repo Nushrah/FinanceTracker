@@ -17,7 +17,7 @@ public class Main {
         
         // Authentication flow
         if (!handleAuthentication()) {
-            System.out.println("Authentication failed. Exiting...");
+            System.out.println("Exiting...");
             return;
         }
         
@@ -89,16 +89,16 @@ public class Main {
         DisplayUtils.printHeader("WELCOME TO FINANCE TRACKER");
         
         System.out.println(DisplayUtils.GREEN + "✨ Manage your finances with ease and precision!" + DisplayUtils.RESET);
-        System.out.println();
-        
-        System.out.println(DisplayUtils.YELLOW + "┌───────────────────────────────────────────────────┐");
-        System.out.println("│                " + DisplayUtils.BOLD + "GET STARTED" + DisplayUtils.RESET + DisplayUtils.YELLOW + "                   │");
-        System.out.println("├───────────────────────────────────────────────────┤");
-        System.out.println("│   1. " + DisplayUtils.GREEN + "➤ Login to Existing Account" + DisplayUtils.RESET + DisplayUtils.YELLOW + "            │");
-        System.out.println("│   2. " + DisplayUtils.CYAN + "⭐ Create New Account" + DisplayUtils.RESET + DisplayUtils.YELLOW + "                   │");
-        System.out.println("│   3. " + DisplayUtils.YELLOW + "🚪 Exit Application" + DisplayUtils.RESET + DisplayUtils.YELLOW + "                   │");
-        System.out.println("└───────────────────────────────────────────────────┘" + DisplayUtils.RESET);
-        System.out.println();
+    System.out.println();
+    
+    System.out.println(DisplayUtils.YELLOW + "┌─────────────────────────────────────────────────────────────┐");
+    System.out.println("│" + DisplayUtils.centerText(DisplayUtils.BOLD + "GET STARTED" + DisplayUtils.RESET + DisplayUtils.YELLOW, 74) + "│");
+    System.out.println("├─────────────────────────────────────────────────────────────┤");
+    System.out.println("│   1. " + DisplayUtils.GREEN + "➤ Login to Existing Account" + DisplayUtils.RESET + DisplayUtils.YELLOW + "                            │");
+    System.out.println("│   2. " + DisplayUtils.CYAN + "⭐ Create New Account" + DisplayUtils.RESET + DisplayUtils.YELLOW + "                                  │");
+    System.out.println("│   3. " + DisplayUtils.RED + "🚪 Exit Application" + DisplayUtils.RESET + DisplayUtils.YELLOW + "                                    │");
+    System.out.println("└─────────────────────────────────────────────────────────────┘" + DisplayUtils.RESET);
+    System.out.println();
         
         int choice = getIntInput(DisplayUtils.BOLD + "Choose an option (1-3): " + DisplayUtils.RESET);
         

@@ -151,13 +151,7 @@ public class CSVImportService {
     }
     
     private Transaction parseBankStatementTransaction(String[] fields, int accountId, int userId, DateTimeFormatter formatter) {
-        // Field mapping for bank statement format:
-        // [0] = CCY (currency - may be empty for HKD)
-        // [1] = Date (e.g., "1 Feb", "7 Feb")
-        // [2] = Transaction Details
-        // [3] = Deposit amount (may be empty)
-        // [4] = Withdrawal amount (may be empty) 
-        // [5] = Balance
+        
         
         String currency = fields[0].trim();
         String dateStr = fields[1].trim();
